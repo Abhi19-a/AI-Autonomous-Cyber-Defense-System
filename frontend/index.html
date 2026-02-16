@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Defense System Dashboard</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #050505;
+            color: #00ff41;
+            background-image:
+                linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: #0d0d0d;
+            padding: 20px;
+            border: 1px solid #1a1a1a;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.05);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            opacity: 0.5;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #00f3ff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+            margin-top: 0;
+        }
+
+        .status-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #1a1a1a;
+            padding-bottom: 10px;
+        }
+
+        .risk-score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #ff0055;
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+        }
+
+        button {
+            padding: 12px 24px;
+            border: 1px solid #00ff41;
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #00ff41;
+            color: black;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+        }
+
+        .btn-attack {
+            border-color: #ff0055;
+            color: #ff0055;
+            background: rgba(255, 0, 85, 0.1);
+        }
+
+        .btn-attack:hover {
+            background: #ff0055;
+            color: black;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.5);
+        }
+
+        .btn-step {
+            border-color: #00f3ff;
+            color: #00f3ff;
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        .btn-step:hover {
+            background: #00f3ff;
+            color: black;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+        }
+
+        .log-panel {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #000;
+            color: #00ff41;
+            padding: 15px;
+            border: 1px solid #1a1a1a;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #111;
+            padding-bottom: 2px;
+        }
+
+        .log-time {
+            color: #555;
+            margin-right: 10px;
+        }
+
+        #network-graph {
+            width: 100%;
+            height: auto;
+            border: 1px solid #1a1a1a;
+            filter: contrast(1.1);
+        }
+
+        .node-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .node-item {
+            padding: 10px;
+            border: 1px solid #1a1a1a;
+            background: #0a0a0a;
+            text-align: center;
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+
+        .node-item:hover {
+            transform: translateY(-2px);
+            border-color: #333;
+        }
+
+        .node-normal {
+            border-left: 3px solid #00ff41;
+            color: #aaa;
+        }
+
+        .node-normal strong {
+            color: #00ff41;
+        }
+
+        .node-compromised {
+            border-left: 3px solid #ff0055;
+            background: rgba(255, 0, 85, 0.05);
+        }
+
+        .node-compromised strong {
+            color: #ff0055;
+        }
+
+        .node-isolated {
+            border-left: 3px solid #666;
+            color: #555;
+        }
+
+        select {
+            background: #000;
+            color: #00f3ff;
+            border: 1px solid #00f3ff;
+            padding: 10px;
+            font-family: monospace;
+            margin-right: 10px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff41;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Main Visualization -->
+        <div class="card">
+            <div class="status-panel">
+                <h2>Network Visualization</h2>
+                <div>
+                    <button class="btn-step" onclick="stepSimulation()">Next Step</button>
+                    <button class="btn-step" onclick="resetSimulation()"
+                        style="background-color: #f39c12;">Reset</button>
+                </div>
+            </div>
+            <img id="network-graph" src="" alt="Network Graph Loading...">
+        </div>
+
+        <!-- Controls & Status -->
+        <div class="card">
+            <h2>Actions</h2>
+            <div class="status-panel">
+                <div>
+                    <h3>Risk Score</h3>
+                    <div id="risk-score" class="risk-score">0.00</div>
+                </div>
+            </div>
+
+            <h3>Manual Attack Simulator</h3>
+            <div style="margin-bottom: 10px;">
+                <select id="attack-target">
+                    <!-- Populated by JS -->
+                </select>
+                <select id="attack-type">
+                    <option value="ddos">DDoS</option>
+                    <option value="sqli">SQL Injection</option>
+                </select>
+                <button class="btn-attack" onclick="triggerAttack()">Launch Attack</button>
+            </div>
+
+            <h3>System Logs</h3>
+            <div id="logs" class="log-panel">
+                <div>System initialized...</div>
+            </div>
+        </div>
+
+        <!-- Node Details -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>Node Health Monitoring</h2>
+            <div id="node-list" class="node-list">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        if (window.location.protocol === 'file:') {
+            alert("Please open http://localhost:5001 to use this dashboard");
+        }
+
+        async function updateState() {
+            // Get State
+            const stateRes = await fetch(`${API_URL}/state`);
+            const state = await stateRes.json();
+
+            // Get Visualization
+            const vizRes = await fetch(`${API_URL}/visualize`);
+            const viz = await vizRes.json();
+
+            render(state, viz);
+        }
+
+        function render(state, viz) {
+            // Update Risk
+            document.getElementById('risk-score').innerText = state.risk_score.toFixed(2);
+            document.getElementById('risk-score').style.color = state.risk_score > 0.5 ? '#c0392b' : '#27ae60';
+
+            // Update Graph
+            if (viz.image) {
+                document.getElementById('network-graph').src = "data:image/png;base64," + viz.image;
+            }
+
+            // Update Node List
+            const NodeList = document.getElementById('node-list');
+            NodeList.innerHTML = '';
+            const targetSelect = document.getElementById('attack-target');
+            targetSelect.innerHTML = '';
+
+            state.nodes.forEach(node => {
+                const div = document.createElement('div');
+                div.className = `node-item node-${node.status}`;
+                div.innerHTML = `<strong>Node ${node.id}</strong><br>${node.role}<br>Status: ${node.status}<br>Vulns: ${node.vulnerabilities}`;
+                NodeList.appendChild(div);
+
+                const option = document.createElement('option');
+                option.value = node.id;
+                option.innerText = `Node ${node.id}`;
+                targetSelect.appendChild(option);
+            });
+        }
+
+        async function stepSimulation() {
+            const res = await fetch(`${API_URL}/step`, { method: 'POST' });
+            const data = await res.json();
+            log(`Step executed. Risk: ${data.risk.toFixed(2)}`);
+            if (data.healing_actions && data.healing_actions.length > 0) {
+                data.healing_actions.forEach(action => log(`[DEFENSE] ${action}`));
+            }
+            if (data.rl_action && data.rl_action !== "None") {
+                log(`[RL AGENT] ${data.rl_action}`);
+            }
+            updateState();
+        }
+
+        async function triggerAttack() {
+            const target = document.getElementById('attack-target').value;
+            const attackType = document.getElementById('attack-type').value;
+
+            await fetch(`${API_URL}/attack`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target_id: parseInt(target), type: attackType })
+            });
+
+            log(`Attacked Node ${target} with ${attackType}`);
+            updateState();
+        }
+
+        // Fix the triggerAttack function logic url:
+        // Actually, let's correct it in the next block.
+
+        function log(msg) {
+            const logs = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.innerText = `> ${msg}`;
+            logs.insertBefore(entry, logs.firstChild);
+        }
+
+        async function resetSimulation() {
+            await fetch(`${API_URL}/reset`, { method: 'POST' });
+            log("Simulation Reset.");
+            updateState();
+        }
+
+        // Initial load
+        updateState();
+    </script>
+</body>
+
+</html>
