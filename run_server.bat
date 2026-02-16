@@ -1,0 +1,9 @@
+@echo off
+echo Starting AI Autonomous Cyber Defense System...
+echo Please wait for the server to start...
+echo.
+echo Opening Dashboard at http://localhost:5001 ...
+start "" "http://localhost:5001"
+echo.
+python -m api.main
+pause
