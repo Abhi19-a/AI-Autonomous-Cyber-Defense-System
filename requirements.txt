@@ -1,0 +1,11 @@
+networkx
+stable-baselines3
+gymnasium
+flask
+matplotlib
+pandas
+numpy
+scikit-learn
+plotly
+requests
+shimmy>=1.1.0
